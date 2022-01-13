@@ -11,19 +11,14 @@ import org.springframework.web.bind.annotation.*
 @CrossOrigin(origins = ["*"])
 class PaymentController(val stripeService: StripeService) {
 
-    @GetMapping
-    fun index(): String {
-        return "Hello my world"
-    }
-
     @GetMapping("config")
     fun config(): GetConfigResponse {
         return stripeService.getConfig()
     }
 
-    @PostMapping("/create-payment-intent")
+    @PostMapping("/payment")
     fun createPaymentIntent(@RequestBody createPaymentIntent: CreatePaymentIntent): CreatePaymentIntentResponse {
-        return stripeService.createPaymentIntent(createPaymentIntent)
+        return stripeService.createPaymentIntent(createPaymentIntent) // save to db
     }
 
     @PostMapping("/stripe/events")
@@ -32,5 +27,15 @@ class PaymentController(val stripeService: StripeService) {
         @RequestBody payload: String
     ) {
         stripeService.handleStripeEvent(sigHeader, payload)
+    }
+
+    @PostMapping("/confirm-booking/{paymentIntentId}")
+    fun confirmBooking(@PathVariable paymentIntentId: String) {
+        return stripeService.confirmPayment(paymentIntentId)
+    }
+
+    @GetMapping("/{clientSecret}")
+    fun getPaymentStatus(@PathVariable clientSecret: String): String {
+        return stripeService.getPaymentStatus(clientSecret)
     }
 }
