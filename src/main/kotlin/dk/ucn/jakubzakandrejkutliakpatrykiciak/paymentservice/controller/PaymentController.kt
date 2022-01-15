@@ -44,7 +44,7 @@ class PaymentController(
             "Hi ${payment.clientName}! Payment $paymentIntentId was successfully confirmed!"))
     }
 
-    @GetMapping("/{clientSecret}")
+    @GetMapping("/status/{clientSecret}")
     fun getPaymentStatus(@PathVariable clientSecret: String): String {
         return stripeService.getPayment(clientSecret).status
     }
