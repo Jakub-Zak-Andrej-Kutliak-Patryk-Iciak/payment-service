@@ -5,7 +5,6 @@ import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.broker.MessageProd
 import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.dto.CreatePaymentIntent
 import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.dto.CreatePaymentIntentResponse
 import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.dto.GetConfigResponse
-import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.model.Payment
 import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.service.StripeService
 import org.springframework.web.bind.annotation.*
 
@@ -22,7 +21,7 @@ class PaymentController(
         return stripeService.getConfig()
     }
 
-    @PostMapping("/payment")
+    @PostMapping("/create-payment-intent")
     fun createPaymentIntent(@RequestBody createPaymentIntent: CreatePaymentIntent): CreatePaymentIntentResponse {
         return stripeService.createPaymentIntent(createPaymentIntent) // save to db
     }
