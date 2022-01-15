@@ -21,7 +21,8 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.springframework.boot:spring-boot-starter-web:2.6.2")
 	implementation("com.stripe:stripe-java:20.94.0")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:2.6.2")
+	implementation("com.rabbitmq:amqp-client:5.14.0")
+	testImplementation("org.springframework.boot:spring-boot-starter-test:2.6.2")
 }
 
 tasks.withType<KotlinCompile> {

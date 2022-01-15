@@ -1,5 +1,7 @@
 package dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.controller
 
+import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.broker.EmailMessage
+import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.broker.MessageProducer
 import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.dto.CreatePaymentIntent
 import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.dto.CreatePaymentIntentResponse
 import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.dto.GetConfigResponse
@@ -9,14 +11,17 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("payment")
 @CrossOrigin(origins = ["*"])
-class PaymentController(val stripeService: StripeService) {
+class PaymentController(
+    val stripeService: StripeService,
+    val messageProducer: MessageProducer
+    ) {
 
     @GetMapping("config")
     fun config(): GetConfigResponse {
         return stripeService.getConfig()
     }
 
-    @PostMapping("/payment")
+    @PostMapping("/create-payment-intent")
     fun createPaymentIntent(@RequestBody createPaymentIntent: CreatePaymentIntent): CreatePaymentIntentResponse {
         return stripeService.createPaymentIntent(createPaymentIntent) // save to db
     }
@@ -31,11 +36,16 @@ class PaymentController(val stripeService: StripeService) {
 
     @PostMapping("/confirm-booking/{paymentIntentId}")
     fun confirmBooking(@PathVariable paymentIntentId: String) {
-        return stripeService.confirmPayment(paymentIntentId)
+        val payment = stripeService.getPayment(paymentIntentId)
+        stripeService.confirmPayment(paymentIntentId)
+        messageProducer.publishEmail(EmailMessage(
+            payment.emailAddress,
+            "Your payment is confirmed!",
+            "Hi ${payment.clientName}! Payment $paymentIntentId was successfully confirmed!"))
     }
 
     @GetMapping("/{clientSecret}")
     fun getPaymentStatus(@PathVariable clientSecret: String): String {
-        return stripeService.getPaymentStatus(clientSecret)
+        return stripeService.getPayment(clientSecret).status
     }
 }

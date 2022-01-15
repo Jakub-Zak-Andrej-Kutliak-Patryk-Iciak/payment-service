@@ -7,6 +7,7 @@ import com.stripe.param.PaymentIntentCreateParams
 import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.dto.CreatePaymentIntent
 import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.dto.CreatePaymentIntentResponse
 import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.dto.GetConfigResponse
+import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.model.Payment
 import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.repository.PaymentRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -40,7 +41,8 @@ class StripeService(
             )
             .build()
         val paymentIntent = PaymentIntent.create(intentParameters)
-        paymentRepository.savePayment(paymentIntent.clientSecret)
+        val payment = Payment(paymentIntent.clientSecret, createPaymentIntent.email, createPaymentIntent.clientName, "created")
+        paymentRepository.savePayment(payment)
         logger.info("Created Payment Intent ${createPaymentIntent.amount} ${createPaymentIntent.currency}: ${createPaymentIntent.description}", createPaymentIntent.description)
         return CreatePaymentIntentResponse(paymentIntent.clientSecret)
     }
@@ -64,7 +66,7 @@ class StripeService(
         logger.info("Payment confirmed $paymentIntentId")
     }
 
-    fun getPaymentStatus(clientSecret: String): String {
-        return paymentRepository.getPaymentStatus(clientSecret)
+    fun getPayment(clientSecret: String): Payment {
+        return paymentRepository.getPayment(clientSecret)
     }
 }
