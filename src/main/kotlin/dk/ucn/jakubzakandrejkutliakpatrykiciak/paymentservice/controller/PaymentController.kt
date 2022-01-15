@@ -37,11 +37,14 @@ class PaymentController(
     @PostMapping("/confirm-booking/{paymentIntentId}")
     fun confirmBooking(@PathVariable paymentIntentId: String) {
         val payment = stripeService.getPayment(paymentIntentId)
+        if(payment.status == "confirmed") {
+            return
+        }
         stripeService.confirmPayment(paymentIntentId)
         messageProducer.publishEmail(EmailMessage(
             payment.emailAddress,
             "Your payment is confirmed!",
-            "Hi ${payment.clientName}! Payment $paymentIntentId was successfully confirmed!"))
+            "Hi ${payment.clientName}!\n\nPayment $paymentIntentId was successfully confirmed!\n\nHave a great day!"))
     }
 
     @GetMapping("/status/{clientSecret}")
