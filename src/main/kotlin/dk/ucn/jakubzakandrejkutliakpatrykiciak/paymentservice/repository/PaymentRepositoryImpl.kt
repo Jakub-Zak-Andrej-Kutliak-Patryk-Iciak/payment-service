@@ -14,13 +14,13 @@ class PaymentRepositoryImpl : PaymentRepository {
         payment.status = "confirmed"
     }
 
-    override fun savePayment(clientSecret: String) {
-        payments.add(Payment(clientSecret, "created"))
+    override fun savePayment(payment: Payment) {
+        payments.add(payment)
     }
 
-    override fun getPaymentStatus(clientSecret: String): String {
+    override fun getPayment(clientSecret: String): Payment {
         return payments.stream()
             .filter { x -> x.clientSecret == clientSecret }
-            .findFirst().orElseThrow().status
+            .findFirst().orElseThrow()
     }
 }
