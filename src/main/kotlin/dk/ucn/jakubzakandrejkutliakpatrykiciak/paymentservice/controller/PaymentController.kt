@@ -6,6 +6,7 @@ import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.dto.CreatePaymentI
 import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.dto.CreatePaymentIntentResponse
 import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.dto.GetConfigResponse
 import dk.ucn.jakubzakandrejkutliakpatrykiciak.paymentservice.service.StripeService
+import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -15,6 +16,7 @@ class PaymentController(
     val stripeService: StripeService,
     val messageProducer: MessageProducer
     ) {
+    var logger = LoggerFactory.getLogger(this.javaClass)
 
     @GetMapping("config")
     fun config(): GetConfigResponse {
@@ -37,11 +39,15 @@ class PaymentController(
     @PostMapping("/confirm-booking/{paymentIntentId}")
     fun confirmBooking(@PathVariable paymentIntentId: String) {
         val payment = stripeService.getPayment(paymentIntentId)
+        if(payment.status == "confirmed") {
+            logger.info("Received a confirm request for an already confirmed payment. PaymentIntentId: $paymentIntentId")
+            return
+        }
         stripeService.confirmPayment(paymentIntentId)
         messageProducer.publishEmail(EmailMessage(
             payment.emailAddress,
             "Your payment is confirmed!",
-            "Hi ${payment.clientName}! Payment $paymentIntentId was successfully confirmed!"))
+            "Hi ${payment.clientName}!\n\nPayment $paymentIntentId was successfully confirmed!\n\nHave a great day!"))
     }
 
     @GetMapping("/status/{clientSecret}")
